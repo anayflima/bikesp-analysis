@@ -23,6 +23,7 @@ class DataTreatment:
         print(self.source_folder_path + filename)
 
         for f in glob.glob(self.source_folder_path + filename):
+            print(f)
 
             last_dot = f.rindex('.')
             file_name = f[:last_dot]
