@@ -1,7 +1,7 @@
 import time
 import sys
-sys.path.append('../../data_analysis')
-sys.path.append('./data_analysis')
+sys.path.append('../../data_treatment')
+sys.path.append('./data_treatment')
 import os
 from modules.DataTreatment import DataTreatment
 
