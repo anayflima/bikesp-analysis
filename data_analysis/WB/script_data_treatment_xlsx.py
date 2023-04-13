@@ -7,7 +7,7 @@ from modules.DataTreatment import DataTreatment
 
 start = time.time()
 
-if 'multimodal' in os.getcwd():
+if 'WB' in os.getcwd():
     data_folder = '../../data/'
 elif 'data_analysis' in os.getcwd():
     data_folder = '../data/'
