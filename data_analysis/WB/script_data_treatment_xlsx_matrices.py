@@ -14,8 +14,14 @@ elif 'data_analysis' in os.getcwd():
 else:
     data_folder = './data/'
 
-source_folder_path = data_folder + 'WB/'
-destination_folder_path = data_folder + 'WB/'
+source_folder_path = data_folder + 'WB/PD_COMAP/matrices_time_distance/'
+destination_folder_path = data_folder + 'WB/PD_COMAP/matrices_time_distance/'
+
+dt = DataTreatment(source_folder_path, destination_folder_path)
+dt.transform_xlsx_to_csv_and_copy_to_destination_folder()
+
+source_folder_path = data_folder + 'WB/PD_COMAP/scenarios/'
+destination_folder_path = data_folder + 'WB/PD_COMAP/scenarios/'
 
 dt = DataTreatment(source_folder_path, destination_folder_path)
 dt.transform_xlsx_to_csv_and_copy_to_destination_folder()
