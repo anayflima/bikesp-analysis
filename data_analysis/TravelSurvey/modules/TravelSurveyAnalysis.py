@@ -16,6 +16,23 @@ class TravelSurveyAnalysis:
                            sep = sep)
         return data
     
+    def treat_csv_file_generated_from_dbf_and_save(self, filename):
+        '''
+            Site used to convert original dbf file to the csv format:
+            https://onlineconvertfree.com/convert/dbf/
+
+            The columns names of the generated csv file had an additional ",N,X,0" in front of it.
+            For example:
+            ZONA,N,3,0	-> instead of ZONA
+            SZ,N,1,0	-> instead of SZ
+
+            Thus, we want to treat the column names to remove everything after the first colon.
+        '''
+        data = pd.read_csv(self.source_folder_path + filename)
+        new_names = [name.split(",")[0] for name in data.columns]
+        data.columns = new_names
+        data.to_csv(self.source_folder_path + filename[:-4] + '_treated.csv', index=False)
+    
     def get_specific_mode_trips(self, df_trips, mode_column, filter_list):
         '''
             filter is a list with the values of the mode_column
