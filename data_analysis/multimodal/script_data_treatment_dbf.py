@@ -17,8 +17,8 @@ else:
     data_folder = './data/'
 
 # =================== OD data =============================
-source_folder_path = data_folder + 'OD_2017/'
-destination_folder_path = data_folder + 'OD_2017/'
+source_folder_path = data_folder + 'OD/OD_2017/'
+destination_folder_path = data_folder + 'OD/OD_2017/'
 
 dt = DataTreatment(source_folder_path, destination_folder_path)
 dt.transform_dbf_to_csv_and_copy_to_destination_folder()
