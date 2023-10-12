@@ -5,16 +5,21 @@ from matplotlib import pyplot as plt
 
 class TravelSurveyAnalysis:
     def __init__(self, source_folder_path, destination_folder_path,
-                 expansion_factor_trip, expansion_factor_person):
+                 expansion_factor_trip, expansion_factor_person, origin_column, destination_column):
         self.source_folder_path = source_folder_path
         self.destination_folder_path = destination_folder_path
         self.expansion_factor_trip = expansion_factor_trip
         self.expansion_factor_person = expansion_factor_person
+        self.origin_column = origin_column
+        self.destination_column = destination_column
     
     def read_data(self, filename, sep = ','):
         data = pd.read_csv(self.source_folder_path + filename, encoding = "ISO-8859-1",
                            sep = sep)
         return data
+
+    def save_dataframe_to_csv(self, df, filepath):
+        df.to_csv(self.destination_folder_path + filepath +'.csv')
     
     def treat_csv_file_generated_from_dbf_and_save(self, filename):
         '''
@@ -40,6 +45,12 @@ class TravelSurveyAnalysis:
         '''
         filter_trips = df_trips[(df_trips[mode_column].isin(filter_list))]
         return filter_trips
+
+    def select_data_within_the_city(self, data, city_code):
+        if city_code == '0': # all cities should be selected. So just return the data
+            return data
+        data_city = data[(data[self.origin_column] == city_code) & ((data[self.destination_column] == city_code))]
+        return data_city
     
     def calculate_distribution(self, df, variable_column, expansion_factor, index_map = {}, normalize=True):
         '''
@@ -81,6 +92,42 @@ class TravelSurveyAnalysis:
         data[new_duration_column].fillna(int(data[new_duration_column].mean()), inplace=True)
 
         return data
+
+    def plot_pie_chart(self, data, variable_column, expansion_factor, index_map):
+        df = self.calculate_distribution(data, variable_column, expansion_factor, index_map)
+        plt.figure(figsize=(18, 9))
+        ax = df[df.columns[0]].plot(kind='pie', autopct='%1.1f%%', fontsize = 20, legend=True, labeldistance=None)
+        plt.ylabel(variable_column, fontsize=20)
+        ax.legend(bbox_to_anchor=(0.9, 1), loc='upper left', fontsize=20)
+        ax.set_title('Distribution of {variable_column}'.format(variable_column = variable_column), fontsize = 25)
+    
+    def plot_histogram(self, data, variable_column, expansion_factor, list_bins):
+        '''
+            the parameter "expansion_factor" is either False (boolean)
+            or a string with the column that contains the expansion factor
+        '''
+        
+        fig, ax = plt.subplots(figsize=(18, 9))
+
+        if expansion_factor:
+            sns.histplot(data = data, x = variable_column, stat = 'percent', bins = list_bins, weights = expansion_factor)
+        else:
+            ax = sns.histplot(data = data, x = variable_column, stat = 'percent', bins = list_bins)
+        
+        for i in ax.containers:
+            ax.bar_label(i,fmt='%.1f', fontsize=25)
+        
+        ax.set_xticks(list_bins)
+
+        # ax.set_ylim(bottom = 0, top = 20)
+
+        ax.axes.set_title('Distribution of {variable_column}'.format(variable_column = variable_column), fontsize=25, pad = 15)
+        ax.set_xlabel(variable_column,fontsize=20, labelpad = 15)
+        ax.set_ylabel('Percentage (%)',fontsize=20, labelpad = 15)
+        ax.set_yticklabels(ax.get_yticks(), size=20)
+        ax.set_xticklabels(ax.get_xticks(), size=20)
+
+        plt.show()
 
     def plot_histogram_age(self, trips, variable_column, expansion_factor = False,
                             list_bins = [0,15,25,35,45,55,65,75,100],
