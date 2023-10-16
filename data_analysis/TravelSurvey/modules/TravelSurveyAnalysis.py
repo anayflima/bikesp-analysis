@@ -5,13 +5,15 @@ from matplotlib import pyplot as plt
 
 class TravelSurveyAnalysis:
     def __init__(self, source_folder_path, destination_folder_path,
-                 expansion_factor_trip, expansion_factor_person, origin_column, destination_column):
+                 expansion_factor_trip, expansion_factor_person,
+                 origin_column, destination_column, residence_column):
         self.source_folder_path = source_folder_path
         self.destination_folder_path = destination_folder_path
         self.expansion_factor_trip = expansion_factor_trip
         self.expansion_factor_person = expansion_factor_person
         self.origin_column = origin_column
         self.destination_column = destination_column
+        self.residence_column = residence_column
     
     def read_data(self, filename, sep = ','):
         data = pd.read_csv(self.source_folder_path + filename, encoding = "ISO-8859-1",
@@ -46,10 +48,24 @@ class TravelSurveyAnalysis:
         filter_trips = df_trips[(df_trips[mode_column].isin(filter_list))]
         return filter_trips
 
-    def select_data_within_the_city(self, data, city_code):
-        if city_code == '0': # all cities should be selected. So just return the data
+    def select_city_data(self, data, city_code, residence = False):
+        '''
+        default -> select trips within the city 9with origin and destination within the city)
+        if residence = True, select trips whose people are residents of the city
+        '''
+        data = self.replace_null_values(data, columns = [self.residence_column,
+                                        self.origin_column, self.destination_column])
+        city_code = int(city_code)
+        if city_code == 0: # all cities should be selected. So just return the data
             return data
-        data_city = data[(data[self.origin_column] == city_code) & ((data[self.destination_column] == city_code))]
+        if residence:
+            data[self.residence_column] = data[self.residence_column].astype('Int64')
+            data_city = data[(data[self.residence_column] == city_code)]
+        else:
+            data[self.origin_column] = data[self.origin_column].astype('Int64')
+            data[self.destination_column] = data[self.destination_column].astype('Int64')
+            data_city = data[(data[self.origin_column] == city_code) & ((data[self.destination_column] == city_code))]
+        
         return data_city
     
     def calculate_distribution(self, df, variable_column, expansion_factor, index_map = {}, normalize=True):
@@ -82,6 +98,23 @@ class TravelSurveyAnalysis:
                     df_percentage.loc[value] = 0
 
         return df_percentage
+
+    def replace_null_values(self, data, columns):
+        for column in columns:
+            data[column] = data[column].replace('#NULL!', None)
+        return data
+    
+    def calculate_distribution_city(self, data, city, city_code, column, index_map = {},
+                                    expansion_factor = False, year = '', residence = False,
+                                    normalize = True, save = False):
+        data_city = self.select_city_data(data, city_code, residence)
+        data_city = self.replace_null_values(data_city, columns = [column])
+        data_city[column] = data_city[column].astype('Int64')
+        df = self.calculate_distribution(data_city, column, expansion_factor, index_map, normalize=normalize)
+        if save:
+            df.to_csv(self.destination_folder_path + 'mode_share/within_city/' +
+                      city + '_mode_share_within_the_city_' + str(year) + '.csv')
+        return df
 
     def calculate_distribution_separated_by_another_column(self, data, index_column, index_map,
                                                            separation_column, separation_index_map,
