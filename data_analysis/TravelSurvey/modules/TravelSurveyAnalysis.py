@@ -73,7 +73,9 @@ class TravelSurveyAnalysis:
             the parameter "expansion_factor" is either False (boolean)
             or a string with the column that contains the expansion factor
         '''
-        
+        df = self.replace_null_values(df, columns = [variable_column])
+        df[variable_column] = df[variable_column].astype('Int64')
+
         new_variable_column = variable_column + '_new'
         if index_map != {}:
             df[new_variable_column] = df[variable_column].map(index_map)
