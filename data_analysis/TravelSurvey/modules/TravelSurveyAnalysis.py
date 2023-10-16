@@ -83,6 +83,32 @@ class TravelSurveyAnalysis:
 
         return df_percentage
 
+    def calculate_distribution_separated_by_another_column(self, data, index_column, index_map,
+                                                           separation_column, separation_index_map,
+                                                           normalize = True, save = False):
+        complete_df = pd.DataFrame(columns = list(separation_index_map.values()))
+
+        for row_index in list(index_map.values()):
+            if row_index:
+                data_row = data[data[index_column] == row_index]
+                df_mode_share = self.calculate_distribution(data_row, separation_column, self.expansion_factor_trip,
+                                                            separation_index_map, normalize=normalize)
+                complete_df.loc[row_index] = df_mode_share[self.expansion_factor_trip]
+
+        if normalize: # calculate the relative percentage of separation_column for each index value.
+            total = complete_df.sum(axis = 1) # total of each row
+            percentage_df = complete_df.divide(total, axis = 0) * 100
+        else: # calculate the percentage of each cell relative to the entire dataset.
+            total = complete_df.sum().sum()
+            percentage_df = complete_df/total * 100
+        percentage_df.index.name = index_column
+        normalize_str = "_normalized" if normalize else ""
+        if save:
+            percentage_df.to_csv(self.destination_folder_path + "dataframes/" +
+                                    index_column + "_separated_by_"+ separation_column + normalize_str + ".csv")
+        return percentage_df
+
+
     def treat_duration_column(self, data, duration_column, new_duration_column):
         
         # the duration column must be int (sometimes it's a string). It could also be float
@@ -281,7 +307,7 @@ class TravelSurveyAnalysis:
                 if bike:
                     axes[r,c].set_ylim(0,120)
                 else:
-                    axes[r,c].set_ylim(0,180)
+                    axes[r,c].set_ylim(0,120)
                 
                 start, end = axes[r,c].get_ylim()
                 stepsize = 20
