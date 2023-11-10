@@ -210,7 +210,7 @@ class TravelSurveyAnalysis:
         
         ax.set_xticks(list_bins)
 
-        ax.set_ylim(bottom = 0, top = 20)
+        ax.set_ylim(bottom = 0, top = 30)
 
         ax.axes.set_title('Age distribution for ' + mode, fontsize=30, pad = 15)
         ax.set_xlabel('Age (years)',fontsize=25, labelpad = 15)
